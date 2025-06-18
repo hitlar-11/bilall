@@ -22,7 +22,7 @@ const Timeline = () => {
     month: '',
     description: ''
   });
-  const ADMIN_PASSWORD = "0324010120120Abbass19#";
+ 
 
   useEffect(() => {
     fetchEvents();
