@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSession } from "next-auth/react"
 import { useRouter } from 'next/router'
+import dynamic from 'next/dynamic'
 
 import gamesImg from '@/gamesImagesData/Data'
 import { getFirestore, collection, addDoc } from "firebase/firestore";
@@ -9,8 +10,12 @@ import { app } from '@/config/Firebase';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
-import { CldUploadWidget } from 'next-cloudinary';
 
+// Dynamically import CldUploadWidget to prevent SSR issues
+const CldUploadWidget = dynamic(
+  () => import('next-cloudinary').then((mod) => mod.CldUploadWidget),
+  { ssr: false }
+);
 
 function Form() {
   
