@@ -187,7 +187,7 @@ function Navbar() {
                 </>
               ) : (
                 <Link 
-                  href="/api/auth/signin" 
+                  href="/login" 
                   className="text-gray-600 hover:text-[#ffff00] transition-colors duration-200"
                 >
                   تسجيل الدخول

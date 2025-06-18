@@ -6,7 +6,7 @@ function Footer() {
   return (
     <footer className="bg-gradient-to-r from-[#008000] to-[#008000]/80 text-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center place-items-center">
           {/* About Section */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-[#ffff00]">من هم حزب الله</h3>
@@ -29,7 +29,7 @@ function Footer() {
           {/* Social Links */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-[#ffff00]">تابعونا</h3>
-            <div className="flex space-x-4">
+            <div className="flex justify-center space-x-4">
               <a href="https://www.instagram.com/bilal3_13?igsh=MTJtM2o0anVrZWgxMQ==" className="text-white/90 hover:text-[#ffff00] transition">
                 <FaInstagram size={24} />
               </a>

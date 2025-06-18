@@ -41,7 +41,7 @@ function Hero({ onSearch }) {
             </div>
           ) : (
             <div className="mt-8 flex justify-center space-x-4">
-              <Link href="/api/auth/signin">
+              <Link href="/login">
                 <button className="px-6 py-3 bg-[#ffff00] text-[#008000] rounded-full hover:bg-[#ffff00]/90 transition-colors duration-200 shadow-lg font-semibold">
                   تسجيل الدخول
                 </button>
