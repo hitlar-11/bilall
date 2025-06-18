@@ -1,4 +1,4 @@
-import { search } from '../../lib/cloudinary';
+import { search } from '../../lib/cloudinary.js';
 
 export default async function handler(req, res) {
   const params = JSON.parse(req.body);
