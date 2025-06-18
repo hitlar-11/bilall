@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from 'next-auth/providers/facebook';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, doc, getDoc, setDoc } from 'firebase/firestore';
 import { app } from '@/config/Firebase';
 import bcrypt from 'bcryptjs';
 
@@ -98,11 +98,11 @@ export const authOptions = {
     async signIn({ user, account, profile }) {
       try {
         const db = getFirestore(app);
-        const userRef = db.collection('users').doc(user.email);
-        const userDoc = await userRef.get();
+        const userRef = doc(db, 'users', user.email);
+        const userDoc = await getDoc(userRef);
 
-        if (!userDoc.exists) {
-          await userRef.set({
+        if (!userDoc.exists()) {
+          await setDoc(userRef, {
             email: user.email,
             name: user.name,
             image: user.image,
@@ -128,10 +128,10 @@ export const authOptions = {
     async session({ session, token }) {
       try {
         const db = getFirestore(app);
-        const userRef = db.collection('users').doc(session.user.email);
-        const userDoc = await userRef.get();
+        const userRef = doc(db, 'users', session.user.email);
+        const userDoc = await getDoc(userRef);
 
-        if (userDoc.exists) {
+        if (userDoc.exists()) {
           session.user.role = userDoc.data().role;
         }
 

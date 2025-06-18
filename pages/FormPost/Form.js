@@ -6,7 +6,7 @@ import { useRouter } from 'next/router'
 import gamesImg from '@/gamesImagesData/Data'
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import { app } from '@/config/Firebase';
-import { doc, setDoc } from "firebase/firestore";
+
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
 import { CldUploadWidget } from 'next-cloudinary';
@@ -27,7 +27,7 @@ function Form() {
     });
     const [imageUrl, setImageUrl] = useState('')
     const { data: session } = useSession()
-    const MAX_DESCRIPTION_LENGTH = 500; // Maximum characters allowed
+    const MAX_DESCRIPTION_LENGTH = 600; // Maximum characters allowed
     const router = useRouter()
     const [loading, setLoading] = useState(false);
     const [imageError, setImageError] = useState(false);

@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from "next-auth/react";
 import { useRouter } from 'next/router';
 import { getFirestore, collection, query, getDocs, orderBy, addDoc } from "firebase/firestore";
 import { app } from "@/config/Firebase";
-import Layout from '@/pages/components/Layout';
-import { HiClock, HiPlus, HiX, HiLockClosed } from 'react-icons/hi';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Layout from '@/pages/components/Layout';
 
 const Timeline = () => {
-  const { data: session } = useSession();
   const router = useRouter();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,10 +59,15 @@ const Timeline = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const year = parseInt(newEvent.year);
+    if (isNaN(year)) {
+      toast.error('Please enter a valid year');
+      return;
+    }
     try {
       const db = getFirestore(app);
       const eventData = {
-        year: parseInt(newEvent.year),
+        year,
         description: newEvent.description,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -82,7 +84,7 @@ const Timeline = () => {
       fetchEvents();
     } catch (error) {
       console.error('Error adding event:', error);
-      toast.error('فشل في إضافة الحدث');
+      toast.error('فشل في إضافة الحدث: ' + (error.message || ''));
     }
   };
 
@@ -136,16 +138,6 @@ const Timeline = () => {
             </p>
           </div>
 
-          <div className="flex justify-end mb-8">
-            <button
-              onClick={() => setShowPasswordModal(true)}
-              className="bg-[#ffff00] text-[#008000] px-6 py-3 rounded-lg font-semibold flex items-center hover:bg-yellow-100 transition-colors duration-200"
-            >
-              <HiPlus className="h-5 w-5 mr-2" />
-              إضافة حدث جديد
-            </button>
-          </div>
-
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ffff00]"></div>
@@ -176,12 +168,14 @@ const Timeline = () => {
                       onClick={() => openEventDetails(event)}
                     >
                       <div className="relative">
+                        
                         <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#ffff00] shadow-lg transform transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl group-hover:rotate-3">
-                          <span className="text-2xl font-bold text-[#008000] transform transition-transform duration-300 group-hover:scale-110">
+                          <span className="text-2xl font-bold text-green-800">
+                            
                             {formatDate(event)}
                           </span>
                         </div>
-                        <div className="absolute inset-0 rounded-full bg-[#ffff00] animate-pulse-slow opacity-0 group-hover:opacity-30"></div>
+                        
                       </div>
                     </div>
                   </div>
@@ -214,132 +208,7 @@ const Timeline = () => {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full transform transition-all duration-300 scale-100">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-right">
-              دخول الإدارة
-            </h2>
-            <form onSubmit={handlePasswordSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                    كلمة المرور
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="shadow appearance-none border rounded w-full py-2 px-3 pl-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-right"
-                      required
-                    />
-                    <HiLockClosed className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordModal(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="bg-[#008000] hover:bg-[#008000]/90 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  دخول
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Event Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-right">
-              إضافة حدث جديد
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                    السنة
-                  </label>
-                  <input
-                    type="number"
-                    value={newEvent.year}
-                    onChange={(e) => setNewEvent({ ...newEvent, year: e.target.value })}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-right"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                    الشهر (اختياري)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="12"
-                    value={newEvent.month}
-                    onChange={(e) => setNewEvent({ ...newEvent, month: e.target.value })}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-right"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                    اليوم (اختياري)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="31"
-                    value={newEvent.day}
-                    onChange={(e) => setNewEvent({ ...newEvent, day: e.target.value })}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-right"
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-bold mb-2 text-right">
-                    الوصف
-                  </label>
-                  <textarea
-                    value={newEvent.description}
-                    onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-right"
-                    rows="4"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-4 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="bg-[#008000] hover:bg-[#008000]/90 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  إضافة
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      </div> 
     </Layout>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { HiCalendar, HiX } from 'react-icons/hi';
 import Link from 'next/link';
 
-function Posts({ posts }) {
+function Posts({ posts = [] }) {
   const DESCRIPTION_LENGTH_LIMIT = 100; // Show "Show More" if description is longer than this
   const [selectedPost, setSelectedPost] = useState(null);
   const [imageError, setImageError] = useState({});
