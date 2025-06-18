@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import React, { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { HiMail, HiLockClosed, HiUser } from 'react-icons/hi';
 import { FaFacebook } from 'react-icons/fa';
@@ -10,6 +10,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function Login() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -18,6 +19,28 @@ function Login() {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push('/');
+    }
+  }, [session, status, router]);
+
+  // Don't render if loading or already authenticated
+  if (status === 'loading') {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-r from-[#008000] to-[#008000]/80 flex items-center justify-center">
+          <div className="text-white text-xl">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (status === 'authenticated') {
+    return null; // Will redirect via useEffect
+  }
 
   const validateForm = () => {
     if (!formData.email || !formData.password) {
@@ -100,6 +123,30 @@ function Login() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const result = await signIn('google', { 
+        redirect: false,
+        callbackUrl: '/'
+      });
+      
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+      
+      if (result?.ok) {
+        router.push('/');
+      }
+    } catch (err) {
+      setError('Google login failed. Please try again.');
+      console.error('Google login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFacebookLogin = async () => {
     setError('');
     setIsLoading(true);
@@ -109,11 +156,13 @@ function Login() {
         callbackUrl: '/'
       });
       
-      if (result.error) {
+      if (result?.error) {
         throw new Error(result.error);
       }
       
-      router.push('/');
+      if (result?.ok) {
+        router.push('/');
+      }
     } catch (err) {
       setError('Facebook login failed. Please try again.');
       console.error('Facebook login error:', err);
@@ -213,7 +262,7 @@ function Login() {
             </div>
             <button
               type="button"
-              onClick={() => signIn('google', { callbackUrl: '/' })}
+              onClick={handleGoogleLogin}
               className="mt-4 w-full flex items-center justify-center gap-2 bg-[#008000] text-white py-2 px-4 rounded-md hover:bg-[#008000]/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
