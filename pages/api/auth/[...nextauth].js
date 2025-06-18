@@ -93,23 +93,34 @@ export const authOptions = {
       }
     })
   ],
-  debug: process.env.NODE_ENV === 'development',
+  debug: true, // Enable debug mode to see what's happening
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('SignIn callback triggered:', { 
+        user: user?.email, 
+        account: account?.provider,
+        profile: profile?.email 
+      });
+      
       try {
         const db = getFirestore(app);
         const userRef = doc(db, 'users', user.email);
         const userDoc = await getDoc(userRef);
 
         if (!userDoc.exists()) {
+          console.log('Creating new user in Firestore:', user.email);
           await setDoc(userRef, {
             email: user.email,
             name: user.name,
             image: user.image,
             role: 'user',
+            provider: account?.provider || 'credentials',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           });
+          console.log('User created successfully');
+        } else {
+          console.log('User already exists in Firestore:', user.email);
         }
 
         return true;
@@ -119,6 +130,12 @@ export const authOptions = {
       }
     },
     async jwt({ token, user, account }) {
+      console.log('JWT callback:', { 
+        tokenEmail: token?.email, 
+        userEmail: user?.email,
+        accountProvider: account?.provider 
+      });
+      
       if (user) {
         token.role = user.role || 'user';
         token.id = user.id;
@@ -126,6 +143,11 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
+      console.log('Session callback:', { 
+        sessionEmail: session?.user?.email,
+        tokenEmail: token?.email 
+      });
+      
       try {
         const db = getFirestore(app);
         const userRef = doc(db, 'users', session.user.email);
@@ -133,6 +155,7 @@ export const authOptions = {
 
         if (userDoc.exists()) {
           session.user.role = userDoc.data().role;
+          console.log('Session updated with role:', userDoc.data().role);
         }
 
         return session;
