@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import { HiMail, HiLockClosed, HiUser } from 'react-icons/hi';
-import { FaFacebook } from 'react-icons/fa';
+import { FaGoogle } from 'react-icons/fa';
 import Layout from './components/Layout';
 
 // Email validation regex
@@ -147,30 +147,6 @@ function Login() {
     }
   };
 
-  const handleFacebookLogin = async () => {
-    setError('');
-    setIsLoading(true);
-    try {
-      const result = await signIn('facebook', { 
-        redirect: false,
-        callbackUrl: '/'
-      });
-      
-      if (result?.error) {
-        throw new Error(result.error);
-      }
-      
-      if (result?.ok) {
-        router.push('/');
-      }
-    } catch (err) {
-      setError('Facebook login failed. Please try again.');
-      console.error('Facebook login error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-r from-[#008000] to-[#008000]/80 py-12">
@@ -272,14 +248,6 @@ function Login() {
                 />
               </svg>
               Sign in with Google
-            </button>
-            <button
-              onClick={handleFacebookLogin}
-              disabled={isLoading}
-              className="mt-4 w-full flex items-center justify-center gap-2 bg-[#1877F2] text-white py-2 px-4 rounded-md hover:bg-[#1877F2]/90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FaFacebook className="h-5 w-5" />
-              {isLoading ? 'Loading...' : 'Continue with Facebook'}
             </button>
           </div>
 
