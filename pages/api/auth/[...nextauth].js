@@ -32,8 +32,8 @@ console.log('Environment check:', {
 export const authOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
+      clientId: process.env.GOOGLE_ID || '',
+      clientSecret: process.env.GOOGLE_SECRET || '',
       authorization: {
         params: {
           prompt: "consent",
@@ -95,6 +95,12 @@ export const authOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
+        console.log('SignIn callback triggered:', {
+          provider: account?.provider,
+          userEmail: user?.email,
+          hasUser: !!user
+        });
+
         const db = getFirestore(app);
         const userRef = doc(db, 'users', user.email);
         const userDoc = await getDoc(userRef);
@@ -108,12 +114,14 @@ export const authOptions = {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           });
+          console.log('New user created in Firestore:', user.email);
         } else {
           await updateDoc(userRef, {
             name: user.name,
             image: user.image,
             updatedAt: new Date().toISOString(),
           });
+          console.log('Existing user updated in Firestore:', user.email);
         }
         return true;
       } catch (error) {
