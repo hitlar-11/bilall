@@ -143,28 +143,59 @@ function Login() {
   const handleGoogleLogin = async () => {
     setError('');
     setIsLoading(true);
+    
     try {
-      const result = await signIn('google', { 
+      console.log('Starting Google sign in...');
+      
+      // Add timeout protection
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Google sign in timed out')), 30000)
+      );
+      
+      const signInPromise = signIn('google', { 
         redirect: false,
         callbackUrl: '/'
       });
       
+      const result = await Promise.race([signInPromise, timeoutPromise]);
+      
+      console.log('Google sign in result:', result);
+      
       if (!result) {
-        throw new Error('Google sign in failed - no response received');
+        throw new Error('Google sign in failed - no response received. Please check your Google OAuth configuration.');
       }
       
       if (result?.error) {
-        throw new Error(result.error);
+        console.error('Google sign in error:', result.error);
+        
+        // Provide specific error messages for common issues
+        let errorMessage = result.error;
+        if (result.error.includes('Configuration')) {
+          errorMessage = 'Google OAuth is not properly configured. Please check your Google Client ID and Secret.';
+        } else if (result.error.includes('AccessDenied')) {
+          errorMessage = 'Access denied. Please try again or contact support.';
+        } else if (result.error.includes('Verification')) {
+          errorMessage = 'Verification failed. Please try again.';
+        }
+        
+        throw new Error(errorMessage);
       }
       
       if (result?.ok) {
+        console.log('Google sign in successful, redirecting...');
         router.push('/');
       } else {
-        throw new Error('Google sign in was not successful');
+        console.log('Google sign in result not ok:', result);
+        throw new Error('Google sign in was not successful. Please try again.');
       }
     } catch (err) {
+      console.error('Google login error details:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      });
+      
       setError(err.message || 'Google login failed. Please try again.');
-      console.error('Google login error:', err);
     } finally {
       setIsLoading(false);
     }
