@@ -99,8 +99,16 @@ function Login() {
           password: formData.password,
         });
 
+        if (!result) {
+          throw new Error('Sign in failed - no response received');
+        }
+
         if (result.error) {
           throw new Error(result.error);
+        }
+
+        if (!result.ok) {
+          throw new Error('Invalid email or password');
         }
       } else {
         // Handle login
@@ -110,14 +118,23 @@ function Login() {
           password: formData.password,
         });
 
+        if (!result) {
+          throw new Error('Sign in failed - no response received');
+        }
+
         if (result.error) {
           throw new Error(result.error);
+        }
+
+        if (!result.ok) {
+          throw new Error('Invalid email or password');
         }
       }
 
       router.push('/');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'An unexpected error occurred');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -132,15 +149,21 @@ function Login() {
         callbackUrl: '/'
       });
       
+      if (!result) {
+        throw new Error('Google sign in failed - no response received');
+      }
+      
       if (result?.error) {
         throw new Error(result.error);
       }
       
       if (result?.ok) {
         router.push('/');
+      } else {
+        throw new Error('Google sign in was not successful');
       }
     } catch (err) {
-      setError('Google login failed. Please try again.');
+      setError(err.message || 'Google login failed. Please try again.');
       console.error('Google login error:', err);
     } finally {
       setIsLoading(false);

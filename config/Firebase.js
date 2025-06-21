@@ -16,9 +16,42 @@ const firebaseConfig = {
   measurementId: "G-SL5V44HJZ4"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-//const analytics = getAnalytics(app);
+// Validate Firebase config
+const validateFirebaseConfig = (config) => {
+  const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+  const missingFields = requiredFields.filter(field => !config[field]);
+  
+  if (missingFields.length > 0) {
+    console.error('Missing Firebase config fields:', missingFields);
+    return false;
+  }
+  
+  return true;
+};
+
+// Initialize Firebase with error handling
+let app;
+try {
+  if (!validateFirebaseConfig(firebaseConfig)) {
+    throw new Error('Invalid Firebase configuration');
+  }
+  
+  app = initializeApp(firebaseConfig);
+  console.log('Firebase initialized successfully');
+  
+  // Only initialize analytics in browser environment
+  if (typeof window !== 'undefined') {
+    try {
+      const analytics = getAnalytics(app);
+      console.log('Firebase Analytics initialized');
+    } catch (analyticsError) {
+      console.warn('Firebase Analytics initialization failed:', analyticsError.message);
+    }
+  }
+} catch (error) {
+  console.error('Firebase initialization failed:', error);
+  throw error;
+}
 
 export { app };
 export default app;
