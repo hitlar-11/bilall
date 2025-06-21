@@ -168,6 +168,11 @@ const handler = NextAuth(authOptions);
 
 export default async function auth(req, res) {
   try {
+    // Add timeout protection
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('NextAuth request timed out')), 25000)
+    );
+
     // Log the request for debugging
     console.log('NextAuth request:', {
       method: req.method,
@@ -180,7 +185,8 @@ export default async function auth(req, res) {
       }
     });
 
-    const result = await handler(req, res);
+    const authPromise = handler(req, res);
+    const result = await Promise.race([authPromise, timeoutPromise]);
     
     // Log the response for debugging
     console.log('NextAuth response status:', res.statusCode);

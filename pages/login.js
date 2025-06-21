@@ -78,8 +78,16 @@ function Login() {
     setIsLoading(true);
 
     try {
+      console.log('Starting credentials sign in...');
+      
+      // Add timeout protection
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sign in timed out')), 30000)
+      );
+
       if (isRegister) {
         // Handle registration
+        console.log('Processing registration...');
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -92,15 +100,18 @@ function Login() {
           throw new Error(data.message || 'Registration failed');
         }
 
+        console.log('Registration successful, signing in...');
         // Registration successful, now sign in
-        const result = await signIn('credentials', {
+        const signInPromise = signIn('credentials', {
           redirect: false,
           email: formData.email,
           password: formData.password,
         });
 
+        const result = await Promise.race([signInPromise, timeoutPromise]);
+
         if (!result) {
-          throw new Error('Sign in failed - no response received');
+          throw new Error('Sign in failed - no response received. Please check your credentials.');
         }
 
         if (result.error) {
@@ -112,14 +123,17 @@ function Login() {
         }
       } else {
         // Handle login
-        const result = await signIn('credentials', {
+        console.log('Processing login...');
+        const signInPromise = signIn('credentials', {
           redirect: false,
           email: formData.email,
           password: formData.password,
         });
 
+        const result = await Promise.race([signInPromise, timeoutPromise]);
+
         if (!result) {
-          throw new Error('Sign in failed - no response received');
+          throw new Error('Sign in failed - no response received. Please check your credentials.');
         }
 
         if (result.error) {
@@ -131,10 +145,16 @@ function Login() {
         }
       }
 
+      console.log('Sign in successful, redirecting...');
       router.push('/');
     } catch (err) {
-      setError(err.message || 'An unexpected error occurred');
-      console.error('Login error:', err);
+      console.error('Login error details:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      });
+      
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
